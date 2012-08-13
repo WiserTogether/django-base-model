@@ -12,9 +12,9 @@ projects.
 Currently the BaseModel class contains the following extra fields in
 an abstract Django Model:
 
-- time_created  = DateTimeField(auto_now_add=True)
+- time_created = DateTimeField(auto_now_add=True)
 - time_modified = DateTimeField(auto_now=True)
-- last_modified = ForiegnKey(django.contrib.auth.models.User)
+- last_modified_by = ForiegnKey(django.contrib.auth.models.User)
 
 
 Installation

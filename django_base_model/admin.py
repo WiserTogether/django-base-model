@@ -11,6 +11,8 @@ class BaseModelAdmin(admin.ModelAdmin):
     inherits from BaseModel.
     """
 
+    exclude = ('last_modified_by', )
+
     def save_model(self, request, obj, form, change):
         if hasattr(obj, 'last_modified_by') and hasattr(request, 'user'):
             obj.last_modified_by = request.user

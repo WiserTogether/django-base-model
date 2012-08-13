@@ -14,7 +14,7 @@ setup(
     description='An abstract model providing common fields for Django models.',
     author='WiserTogether Tech Team',
     author_email='tech@wisertogether.com',
-    url='http://github.com/wisertoghether/django-base-model/',
+    url='http://github.com/wisertogether/django-base-model/',
     long_description=open('README', 'r').read(),
     packages=[
         'django_base_model',

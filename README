@@ -20,7 +20,7 @@ an abstract Django Model:
 Installation
 ------------
 
-Simply add this module to your Python path and then wherever you
+Simply add this module to your Python path and then whenever you
 would like to create a model with the additional fields, do the
 following:
 

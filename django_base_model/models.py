@@ -11,14 +11,8 @@ class BaseModel(models.Model):
     across multiple projects.
     """
 
-    time_created = models.DateTimeField(
-        auto_now_add=True,
-        default=datetime.datetime.now()
-    )
-    time_modified = models.DateTimeField(
-        auto_now=True,
-        default=datetime.datetime.now()
-    )
+    time_created = models.DateTimeField(auto_now_add=True, null=True)
+    time_modified = models.DateTimeField(auto_now=True, null=True)
     last_modified_by = models.ForeignKey(
         User,
         related_name='%(app_label)s_%(class)s_related',

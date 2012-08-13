@@ -1,0 +1,43 @@
+Motivation
+----------
+
+In an effort to provide useful constructs in each of our projects, a
+need arose for a base model class in Django to provide some common
+fields and functionality as an abstract base model.
+
+By moving this functionality into a standalone module, we are now
+able to import and use this base model class across all of our
+projects.
+
+Currently the BaseModel class contains the following extra fields in
+an abstract Django Model:
+
+- time_created  = DateTimeField(auto_now_add=True)
+- time_modified = DateTimeField(auto_now=True)
+- last_modified = ForiegnKey(django.contrib.auth.models.User)
+
+
+Installation
+------------
+
+Simply add this module to your Python path and then wherever you
+would like to create a model with the additional fields, do the
+following:
+
+from django_base_model.models import BaseModel
+
+
+class MyModel(BaseModel):
+    ...
+
+
+If you would like support for keeping track of who made the last
+change to the object in the Django admin for any model that inherits
+from BaseModel, you can also setup a ModelAdmin object that will help
+take care of that for you:
+
+from django_base_model.admin import BaseModelAdmin
+
+
+class MyModelAdmin(BaseModelAdmin):
+    ...

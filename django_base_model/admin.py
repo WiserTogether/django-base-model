@@ -21,6 +21,10 @@ class BaseModelAdmin(admin.ModelAdmin):
         return obj.last_modified_by.get_full_name()
     last_modified_by_name.short_description = 'Last Modified By'
 
+    def last_edited(self, obj):
+        return obj.time_modified.strftime('%m/%d/%Y %I:%M %p')
+    last_edited.short_description = 'Last Edited'
+
     def save_model(self, request, obj, form, change):
         if hasattr(obj, 'last_modified_by') and hasattr(request, 'user'):
             obj.last_modified_by = request.user

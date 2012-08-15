@@ -12,16 +12,24 @@ class BaseModelAdmin(admin.ModelAdmin):
     """
 
     readonly_fields = (
-        'last_modified_by_name',
+        'last_modified_by',
         'time_created',
         'time_modified'
     )
 
     def last_modified_by_name(self, obj):
+        """
+        Method for use in the list_display tuple.
+        """
+
         return obj.last_modified_by.get_full_name()
     last_modified_by_name.short_description = 'Last Modified By'
 
     def last_edited(self, obj):
+        """
+        Method for use in the list_display tuple.
+        """
+
         return obj.time_modified.strftime('%m/%d/%Y %I:%M %p')
     last_edited.short_description = 'Last Edited'
 

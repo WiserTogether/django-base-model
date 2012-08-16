@@ -35,12 +35,30 @@ class ModelAttribute(models.Model):
         return u'%s: %s' % (self.name, self.value)
 
     def clean(self):
+        """
+        Model clean method to validate the value of "name" before saving any
+        changes to the model.  We only want valid names that could be turned
+        easily into Python attributes on an object.
+        """
+
         self.name = self.name.lower()
 
         if ATTRIBUTE_MODEL_NAME_PATTERN.match(self.name) is None:
             raise ValidationError(
                 'The name must be in the format of a Python property (e.g., "my_property").'
             )
+
+    def save(self, *args, **kwargs):
+        """
+        Override the save method so that we ensure we're only saving the name
+        field in lower case.
+        """
+
+        # This will have already passed validation and we want to keep the
+        # names lower case.
+        self.name = self.name.lower()
+
+        return super(self, ModelAttribute).save(*args, **kwargs)
 
 
 class BaseModelManager(models.Manager):

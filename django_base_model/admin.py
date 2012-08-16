@@ -6,6 +6,7 @@ from django_base_model.models import ModelAttribute
 
 class ModelAttributeInline(generic.GenericTabularInline):
     model = ModelAttribute
+    extra = 1
 
 
 class BaseModelAdmin(admin.ModelAdmin):

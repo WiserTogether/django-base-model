@@ -20,9 +20,18 @@ an abstract Django Model:
 Installation
 ------------
 
-Simply add this module to your Python path and then whenever you
-would like to create a model with the additional fields, do the
-following:
+Simply add this module to your Python path, then add the following to
+your Django settings.py INSTALLED_APPS section:
+
+django_base_model
+
+Once that in place run the following management command to update
+your database:
+
+./manage.py syncdb
+
+Now whenever you would like to create a model with the additional
+fields, do the following:
 
 from django_base_model.models import BaseModel
 

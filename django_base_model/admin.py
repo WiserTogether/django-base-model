@@ -1,5 +1,11 @@
 from django.contrib import admin
 
+from django_base_model.models import AttributeModel
+
+
+class AttributeModelInline(admin.TabularInline):
+    model = AttributeModel
+
 
 class BaseModelAdmin(admin.ModelAdmin):
     """
@@ -10,6 +16,8 @@ class BaseModelAdmin(admin.ModelAdmin):
     This requires that the model you are associating with the ModelAdmin object
     inherits from BaseModel.
     """
+
+    inlines = [AttributeModelInline, ]
 
     readonly_fields = (
         'last_modified_by',
@@ -49,3 +57,5 @@ class BaseModelAdmin(admin.ModelAdmin):
             instance.save()
 
         formset.save_m2m()
+
+admin.site.register(AttributeModel)

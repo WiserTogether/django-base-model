@@ -1,10 +1,11 @@
 from django.contrib import admin
+from django.contrib.contenttypes import generic
 
-from django_base_model.models import AttributedModel
+from django_base_model.models import ModelAttribute
 
 
-class AttributedModelInline(admin.TabularInline):
-    model = AttributedModel
+class ModelAttributeInline(generic.GenericTabularInline):
+    model = ModelAttribute
 
 
 class BaseModelAdmin(admin.ModelAdmin):
@@ -17,7 +18,7 @@ class BaseModelAdmin(admin.ModelAdmin):
     inherits from BaseModel.
     """
 
-    inlines = [AttributedModelInline, ]
+    inlines = [ModelAttributeInline, ]
 
     readonly_fields = (
         'last_modified_by',
@@ -57,5 +58,3 @@ class BaseModelAdmin(admin.ModelAdmin):
             instance.save()
 
         formset.save_m2m()
-
-admin.site.register(AttributedModel)

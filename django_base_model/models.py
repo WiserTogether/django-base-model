@@ -27,6 +27,12 @@ class ModelAttribute(models.Model):
         help_text="""The name must be set to something that looks like a Python property (e.g., "my_property")."""
     )
     value = models.TextField(blank=True, default='')
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = generic.GenericForeignKey('content_type', 'object_id')
+
+    def __unicode__(self):
+        return u'%s: %s' % (self.name, self.value)
 
     def clean(self):
         self.name = self.name.lower()
@@ -35,21 +41,6 @@ class ModelAttribute(models.Model):
             raise ValidationError(
                 'The name must be in the format of a Python property (e.g., "my_property").'
             )
-
-
-class AttributedModel(models.Model):
-    """
-    Defines a model that serves as the generic content type link between the
-    ModelAttribute and the model it is related to.
-    """
-
-    attribute = models.ForeignKey(ModelAttribute)
-    content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
-
-    def __unicode__(self):
-        return u'%s: %s' % (self.attribute.name, self.attribute.value)
 
 
 class BaseModelManager(models.Manager):
@@ -84,7 +75,7 @@ class BaseModel(models.Model):
         null=True,
         blank=True
     )
-    attributes = generic.GenericRelation(AttributedModel)
+    attributes = generic.GenericRelation(ModelAttribute)
 
     objects = BaseModelManager()
 

@@ -22,7 +22,7 @@ class BaseModelAdmin(admin.ModelAdmin):
     inlines = [ModelAttributeInline, ]
 
     readonly_fields = (
-        'last_modified_by',
+        'last_modified_by_name',
         'time_created',
         'time_modified'
     )

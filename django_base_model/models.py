@@ -58,7 +58,7 @@ class ModelAttribute(models.Model):
         # names lower case.
         self.name = self.name.lower()
 
-        return super(self, ModelAttribute).save(*args, **kwargs)
+        return super(ModelAttribute, self).save(*args, **kwargs)
 
 
 class BaseModelManager(models.Manager):
@@ -69,13 +69,13 @@ class BaseModelManager(models.Manager):
     """
 
     def get(self, *args, **kwargs):
-        return super(self, BaseModelManager).get(*args, **kwargs)
+        return super(BaseModelManager, self).get(*args, **kwargs)
 
     def get_or_create(self, **kwargs):
-        return super(self, BaseModelManager).get_or_create(**kwargs)
+        return super(BaseModelManager, self).get_or_create(**kwargs)
 
     def create(self, **kwargs):
-        return super(self, BaseModelManager).create(**kwargs)
+        return super(BaseModelManager, self).create(**kwargs)
 
 
 class BaseModel(models.Model):

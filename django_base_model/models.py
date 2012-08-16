@@ -68,14 +68,22 @@ class BaseModelManager(models.Manager):
     properties when doing a get of a single instance of the model.
     """
 
+    def set_attributes(self, obj):
+        for attribute in obj.attributes.all():
+            if not hasattr(obj, attribute.name):
+                setattr(obj, attribute.name, attribute.value)
+
+        return obj
+
     def get(self, *args, **kwargs):
-        return super(BaseModelManager, self).get(*args, **kwargs)
+        obj = super(BaseModelManager, self).get(*args, **kwargs)
+
+        return self.set_attributes(obj)
 
     def get_or_create(self, **kwargs):
-        return super(BaseModelManager, self).get_or_create(**kwargs)
+        obj = super(BaseModelManager, self).get_or_create(**kwargs)
 
-    def create(self, **kwargs):
-        return super(BaseModelManager, self).create(**kwargs)
+        return self.set_attributes(obj)
 
 
 class BaseModel(models.Model):

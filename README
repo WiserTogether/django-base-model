@@ -3,7 +3,8 @@ Motivation
 
 In an effort to provide useful constructs in each of our projects, a
 need arose for a base model class in Django to provide some common
-fields and functionality as an abstract base model.
+fields and functionality as an abstract base model, including adding
+arbitrary properties to the model that can also persist.
 
 By moving this functionality into a standalone module, we are now
 able to import and use this base model class across all of our
@@ -18,8 +19,8 @@ an abstract Django Model:
 - attributes = GenericRelation(ModelAttribute)
 
 ModelAttribute is simple model that utilizes Django's ContentTypes
-to facilitate creating arbitrary name/value pairs associated with any
-model that inherits from BaseModel.
+and generic relations to facilitate creating arbitrary name/value
+pairs associated with any model that inherits from BaseModel.
 
 Installation
 ------------

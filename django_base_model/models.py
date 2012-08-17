@@ -11,6 +11,61 @@ from django_base_model import generic as base_generic
 ATTRIBUTE_MODEL_NAME_PATTERN = re.compile('^[a-z0-9_]+$')
 
 
+class ModelAttributeManager(models.Manager):
+    """
+Defines a custom ModelManager that takes into account automatically adding
+new ModelAttributes as direct properties on objects that inherit from
+BaseModel.
+"""
+
+    def get_or_create(self, content_object=None, **kwargs):
+        """
+        Overwritten get_or_create method to support automatically adding the
+        ModelAttribute as a direct property to the associated content object,
+        if the object inherits from BaseModel.
+
+        The reason this optional argument is required in order to make this
+        functionality work is due to the fact that a reference to the object in
+        memory must be used in order for the property to be assigned to the
+        correct instance of the object in memory.
+
+        Keyword arguments:
+        content_object -- the object that the property should be added to,
+                          which must inherit from BaseModel.
+        """
+
+        obj, created = super(BaseModelManager, self).get_or_create(**kwargs)
+
+        # Only reset the ModelAttribute association if the object was created.
+        if created and content_object and hasattr(content_object, 'set_attribute'):
+            content_object.set_attribute(obj.name, obj.value)
+
+        return (obj, created)
+
+    def create(self, content_object=None, **kwargs):
+        """
+        Overwritten create method to support automatically adding the
+        ModelAttribute as a direct property to the associated content object,
+        if the object inherits from BaseModel.
+
+        The reason this optional argument is required in order to make this
+        functionality work is due to the fact that a reference to the object in
+        memory must be used in order for the property to be assigned to the
+        correct instance of the object in memory.
+
+        Keyword arguments:
+        content_object -- the object that the property should be added to,
+                          which must inherit from BaseModel.
+        """
+
+        obj = super(BaseModelManager, self).create(**kwargs)
+
+        if content_object and hasattr(content_object, 'set_attribute'):
+            content_object.set_attribute(obj.name, obj.value)
+
+        return obj
+
+
 class ModelAttribute(models.Model):
     """
     Defines a simple name/value pair model that can be used with generic
@@ -32,6 +87,8 @@ class ModelAttribute(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
+
+    objects = ModelAttributeManager()
 
     class Meta:
         unique_together = ('name', 'content_type', 'object_id')

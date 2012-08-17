@@ -183,7 +183,22 @@ def create_generic_related_manager(superclass):
                 obj.delete(using=db)
         clear.alters_data = True
 
-        def get_or_create(self, **kwargs):
+        def get_or_create(self, content_object=None, **kwargs):
+            """
+            This get_or_create method takes in an optional argument of the
+            object that this model is being created off of so that it's
+            properties can be added to the related model automatically.
+
+            The reason this optional argument is required in order to make this
+            functionality work is due to the fact that a reference to the
+            object in memory must be used in order for the property to be
+            assigned to the correct instance of the object in memory.
+
+            Keyword arguments:
+            content_object -- the object that the property should be added to,
+                              which must inherit from BaseModel.
+            """
+
             kwargs[self.content_type_field_name] = self.content_type
             kwargs[self.object_id_field_name] = self.pk_val
             db = router.db_for_write(self.model, instance=self.instance)
@@ -192,13 +207,28 @@ def create_generic_related_manager(superclass):
                 self
             ).using(db).get_or_create(**kwargs)
 
-            if created and hasattr(obj.content_object, 'set_attribute'):
-                obj.content_object.set_attribute(obj.name, obj.value)
+            if created and content_object and hasattr(content_object, 'set_attribute'):
+                content_object.set_attribute(obj.name, obj.value)
 
             return (obj, created)
         get_or_create.alters_data = True
 
-        def create(self, **kwargs):
+        def create(self, content_object=None, **kwargs):
+            """
+            This create method takes in an optional argument of the object that
+            this model is being created off of so that it's properties can be
+            added to the related model automatically.
+
+            The reason this optional argument is required in order to make this
+            functionality work is due to the fact that a reference to the
+            object in memory must be used in order for the property to be
+            assigned to the correct instance of the object in memory.
+
+            Keyword arguments:
+            content_object -- the object that the property should be added to,
+                              which must inherit from BaseModel.
+            """
+
             kwargs[self.content_type_field_name] = self.content_type
             kwargs[self.object_id_field_name] = self.pk_val
             db = router.db_for_write(self.model, instance=self.instance)
@@ -207,8 +237,8 @@ def create_generic_related_manager(superclass):
                 self
             ).using(db).create(**kwargs)
 
-            if hasattr(obj.content_object, 'set_attribute'):
-                obj.content_object.set_attribute(obj.name, obj.value)
+            if content_object and hasattr(content_object, 'set_attribute'):
+                content_object.set_attribute(obj.name, obj.value)
 
             return obj
         create.alters_data = True

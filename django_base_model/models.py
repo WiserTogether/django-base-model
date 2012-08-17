@@ -1,50 +1,14 @@
 import re
 
 from django.contrib.auth.models import User
-from django.contrib.contenttypes import generic
+#from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from django_base_model import generic
+
 ATTRIBUTE_MODEL_NAME_PATTERN = re.compile('^[a-z0-9_]+$')
-
-
-class ModelAttributeManager(models.Manager):
-    """
-    Defines a custom ModelManager that takes into account automatically adding
-    new ModelAttributes as direct properties on objects that inherit from
-    BaseModel.
-    """
-
-    def get_or_create(self, **kwargs):
-        """
-        Overwritten get_or_create method to support automatically adding the
-        ModelAttribute as a direct property to the associated content object,
-        if the object inherits from BaseModel.
-        """
-
-        obj, created = super(BaseModelManager, self).get_or_create(**kwargs)
-
-        # Only reset the ModelAttribute association if the object was created.
-        if created and hasattr(obj.content_object, 'set_attribute'):
-            obj.content_object.set_attribute(obj.name, obj.value)
-
-        return (obj, created)
-
-    def create(self, **kwargs):
-        """
-        Overwritten create method to support automatically adding the
-        ModelAttribute as a direct property to the associated content object,
-        if the object inherits from BaseModel.
-
-        """
-
-        obj = super(BaseModelManager, self).create(**kwargs)
-
-        if hasattr(obj.content_object, 'set_attribute'):
-            obj.content_object.set_attribute(obj.name, obj.value)
-
-        return obj
 
 
 class ModelAttribute(models.Model):
@@ -68,8 +32,6 @@ class ModelAttribute(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
-
-    objects = ModelAttributeManager()
 
     class Meta:
         unique_together = ('name', 'content_type', 'object_id')
@@ -173,7 +135,7 @@ class BaseModel(models.Model):
         null=True,
         blank=True
     )
-    attributes = generic.GenericRelation(ModelAttribute)
+    attributes = generic.BaseGenericRelation(ModelAttribute)
 
     objects = BaseModelManager()
 

@@ -158,8 +158,6 @@ class BaseModelManager(models.Manager):
         if created and attributes is not None:
             obj.create_attributes(attributes)
 
-        obj.set_attributes()
-
         return (obj, created)
 
     def create(self, attributes, **kwargs):
@@ -177,8 +175,6 @@ class BaseModelManager(models.Manager):
 
         if attributes is not None:
             obj.create_attributes(attributes)
-
-        obj.set_attributes()
 
         return obj
 
@@ -238,7 +234,8 @@ class BaseModel(models.Model):
     def create_attributes(self, attributes):
         """
         Given a list of attributes, creates a series of ModelAttribute objects
-        associated with the object.
+        associated with the object and then automatically sets them as
+        properties on the object.
 
         Keyword arguments:
         attributes -- a list of attribute names
@@ -246,3 +243,5 @@ class BaseModel(models.Model):
 
         for attribute in attributes:
             self.attributes.create(name=attribute)
+
+        self.set_attributes()

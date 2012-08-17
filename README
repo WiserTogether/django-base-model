@@ -15,7 +15,11 @@ an abstract Django Model:
 - time_created = DateTimeField(auto_now_add=True)
 - time_modified = DateTimeField(auto_now=True)
 - last_modified_by = ForiegnKey(django.contrib.auth.models.User)
+- attributes = GenericRelation(ModelAttribute)
 
+ModelAttribute is simple model that utilizes Django's ContentTypes
+to facilitate creating arbitrary name/value pairs associated with any
+model that inherits from BaseModel.
 
 Installation
 ------------
@@ -25,13 +29,16 @@ your Django settings.py INSTALLED_APPS section:
 
 django_base_model
 
-Once that in place run the following management command to update
+Once that is in place run the following management command to update
 your database:
 
 ./manage.py syncdb
 
-Now whenever you would like to create a model with the additional
-fields, do the following:
+Usage
+-----
+
+Whenever you would like to create a model with the additional fields,
+do the following:
 
 from django_base_model.models import BaseModel
 
@@ -39,14 +46,47 @@ from django_base_model.models import BaseModel
 class MyModel(BaseModel):
     ...
 
+By default, BaseModelManager is already associated with the "objects"
+property of any model that inherits from BaseModel. If you plan on
+overriding or adding some additional methods on the ModelManager
+associated with the model, then you'll also want to make sure your
+custom ModelManager inherits from BaseModelManager:
 
-If you would like support for keeping track of who made the last
-change to the object in the Django admin for any model that inherits
-from BaseModel, you can also setup a ModelAdmin object that will help
-take care of that for you:
+class MyModelManager(BaseModelManager):
+    ...
+
+And in your model do the following:
+
+class MyModel(BaseModel):
+    ...
+    objects = MyModelManager()
+    ...
+
+Lastly, if you would like support for keeping track of who made the
+last change to the object in the Django admin and seeing when the
+model was created and last modified for any model that inherits from
+BaseModel, you can also setup a ModelAdmin object that will help take
+care of that for you:
 
 from django_base_model.admin import BaseModelAdmin
 
 
 class MyModelAdmin(BaseModelAdmin):
     ...
+
+There are three methods on the BaseModelAdmin class that you can
+utilize for things such as the list_display property on a ModelAdmin
+object:
+
+ - last_modified_by_name (formatted Django User name)
+ - last_edited (formatted time_modified)
+ - created_on (formatted time_created)
+
+These methods will display more reasonably formatted versions of the
+values stored with the model, but the BaseModelAdmin display makes no
+assumptions of what you would like to appear in the object listing
+pages of the Django admin so you will have to add them in yourself
+to the properties on your custom ModelAdmin class.  Please consult
+the Django documentation for more details on how to do so here:
+
+https://docs.djangoproject.com/en/1.4/ref/contrib/admin/

@@ -36,8 +36,8 @@ class BaseModelAdmin(admin.ModelAdmin):
 
     def last_modified_by_name(self, obj):
         """
-        Provides a means of displaying a user's name nicely in the Django
-        admin.
+        Provides a means of displaying a Django User's name nicely in the
+        Django admin for the last_modified_by property.
         """
 
         return obj.last_modified_by.get_full_name()
@@ -45,12 +45,21 @@ class BaseModelAdmin(admin.ModelAdmin):
 
     def last_edited(self, obj):
         """
-        Provides a means of displaying a user's name nicely in the Django
-        admin.
+        Provides a means of displaying the time_modified value nicely in the
+        Django admin.
         """
 
         return obj.time_modified.strftime('%m/%d/%Y %I:%M %p')
     last_edited.short_description = 'Last Edited'
+
+    def created_on(self, obj):
+        """
+        Provides a means of displaying the time_created value nicely in the
+        Django admin.
+        """
+
+        return obj.time_created.strftime('%m/%d/%Y %I:%M %p')
+    created_on.short_description = 'Created On'
 
     def save_model(self, request, obj, form, change):
         """

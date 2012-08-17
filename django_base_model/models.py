@@ -39,31 +39,24 @@ class ModelAttribute(models.Model):
         Model clean method to validate the value of "name" before saving any
         changes to the model.  We only want valid names that could be turned
         easily into Python attributes on an object.
-
-        We also want to enforce "name" being required.
         """
 
-        if not self.name:
-            raise ValidationError('Name is a required field.')
-
+        # Lower case the value of name automatically.
         self.name = self.name.lower()
 
         if ATTRIBUTE_MODEL_NAME_PATTERN.match(self.name) is None:
             raise ValidationError(
-                'The name must be in the format of a Python property (e.g., "my_property").'
+                '"name" must be in the format of a Python object property (e.g., "my_property").'
             )
 
     def save(self, *args, **kwargs):
         """
-        Override the save method so that we ensure we're only saving the name
-        field in lower case.
+        Override the save method so that we ensure we're saving the model
+        fields properly.  By calling the full_clean method, anything that is
+        not correct will cause a ValidationError to be raised.
         """
 
-        # This will have already passed validation and we want to keep the
-        # names lower case.
-        #self.name = self.name.lower()
         self.full_clean()
-
         return super(ModelAttribute, self).save(*args, **kwargs)
 
 

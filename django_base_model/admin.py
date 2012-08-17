@@ -19,6 +19,7 @@ class BaseModelAdmin(admin.ModelAdmin):
     inherits from BaseModel.
     """
 
+    exclude = ['last_modified_by', ]
     inlines = [ModelAttributeInline, ]
 
     readonly_fields = (

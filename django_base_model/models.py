@@ -136,12 +136,17 @@ class BaseModelManager(models.Manager):
     """
 
     def get(self, *args, **kwargs):
+        """
+        Overwritten get method to support adding ModelAttribute associations
+        automatically when retrieving an object that inherits from BaseModel.
+        """
+
         obj = super(BaseModelManager, self).get(*args, **kwargs)
         obj.set_attributes()
 
         return obj
 
-    def get_or_create(self, attributes=None, **kwargs):
+    def get_or_create(self, attributes=None, attribute_names=None, **kwargs):
         """
         Overwritten get_or_create method to support creating ModelAttribute
         associations automatically when creating an object that inherits from
@@ -149,18 +154,19 @@ class BaseModelManager(models.Manager):
         associations will be tied directly to the object as properties.
 
         Keyword arguments:
-        attributes -- a list of attribute names.
+        attributes -- a dictionary of name/value pairs.
+        attribute_names -- a list of attribute names.
         """
 
         obj, created = super(BaseModelManager, self).get_or_create(**kwargs)
 
         # Only create the attributes if the object was created.
         if created and attributes is not None:
-            obj.create_attributes(attributes)
+            obj.create_attributes(attributes, attribute_names)
 
         return (obj, created)
 
-    def create(self, attributes, **kwargs):
+    def create(self, attributes=None, attribute_names=None, **kwargs):
         """
         Overwritten create method to support creating ModelAttribute
         associations automatically when creating an object that inherits from
@@ -168,15 +174,67 @@ class BaseModelManager(models.Manager):
         properties on the object.
 
         Keyword arguments:
-        attributes -- a list of attribute names.
+        attributes -- a dictionary of name/value pairs.
+        attribute_names -- a list of attribute names.
         """
 
         obj = super(BaseModelManager, self).create(**kwargs)
 
         if attributes is not None:
-            obj.create_attributes(attributes)
+            obj.create_attributes(attributes, attribute_names)
 
         return obj
+
+    def all_with_attributes(self, *args, **kwargs):
+        """
+        An extra all method to support adding ModelAttribute associations
+        to each object in the QuerySet automatically when filtering on an
+        object that inherits from BaseModel.
+
+        This is a separate method as it may be expensive to run due to the
+        evaluation of the query set being returned.
+        """
+
+        query_set = super(BaseModelManager, self).all(*args, **kwargs)
+
+        for obj in query_set:
+            obj.set_attributes()
+
+        return query_set
+
+    def filter_with_attributes(self, *args, **kwargs):
+        """
+        An extra filter method to support adding ModelAttribute associations
+        to each object in the QuerySet automatically when filtering on an
+        object that inherits from BaseModel.
+
+        This is a separate method as it may be expensive to run due to the
+        evaluation of the query set being returned.
+        """
+
+        query_set = super(BaseModelManager, self).filter(*args, **kwargs)
+
+        for obj in query_set:
+            obj.set_attributes()
+
+        return query_set
+
+    def exclude_with_attributes(self, *args, **kwargs):
+        """
+        An extra exclude method to support adding ModelAttribute associations
+        to each object in the QuerySet automatically when filtering by
+        exclusion on an object that inherits from BaseModel.
+
+        This is a separate method as it may be expensive to run due to the
+        evaluation of the query set being returned.
+        """
+
+        query_set = super(BaseModelManager, self).exclude(*args, **kwargs)
+
+        for obj in query_set:
+            obj.set_attributes()
+
+        return query_set
 
 
 class BaseModel(models.Model):
@@ -231,17 +289,26 @@ class BaseModel(models.Model):
                 if overwrite or not hasattr(self, attribute.name):
                     setattr(self, attribute.name, attribute.value)
 
-    def create_attributes(self, attributes):
+    def create_attributes(self, **kwargs):
         """
         Given a list of attributes, creates a series of ModelAttribute objects
         associated with the object and then automatically sets them as
         properties on the object.
 
         Keyword arguments:
-        attributes -- a list of attribute names
+        attributes -- a dictionary of name/value pairs.
+        attribute_names -- a list of attribute names.
+
+        If attributes is present in the kwargs, attribute_names will be
+        ignored.
         """
 
-        for attribute in attributes:
-            self.attributes.create(name=attribute)
+        attributes = kwargs.get('attributes', None)
+        attribute_names = kwargs.get('attribute_names', None)
 
-        self.set_attributes()
+        if attributes:
+            for name, value in kwargs['attributes'].items():
+                self.attributes.create(self, name=name, value=value)
+        elif attribute_names:
+            for name in kwargs['attribute_names']:
+                self.attributes.create(self, name=name)

@@ -1,12 +1,12 @@
 import re
 
 from django.contrib.auth.models import User
-#from django.contrib.contenttypes import generic
+from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
 
-from django_base_model import generic
+from django_base_model import generic as base_generic
 
 ATTRIBUTE_MODEL_NAME_PATTERN = re.compile('^[a-z0-9_]+$')
 
@@ -135,7 +135,7 @@ class BaseModel(models.Model):
         null=True,
         blank=True
     )
-    attributes = generic.BaseGenericRelation(ModelAttribute)
+    attributes = base_generic.BaseGenericRelation(ModelAttribute)
 
     objects = BaseModelManager()
 

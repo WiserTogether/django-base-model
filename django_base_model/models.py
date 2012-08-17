@@ -31,6 +31,9 @@ class ModelAttribute(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
+    class Meta:
+        unique_together = ('name', 'content_type', 'object_id')
+
     def __unicode__(self):
         return u'%s: %s' % (self.name, self.value)
 

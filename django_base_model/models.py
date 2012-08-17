@@ -24,7 +24,7 @@ class ModelAttribute(models.Model):
 
     name = models.CharField(
         max_length=255,
-        help_text="""The name must be set to something that looks like a Python property (e.g., "my_property")."""
+        help_text='The name must be set to something that looks like a Python property (e.g., "my_property").'
     )
     value = models.TextField(blank=True, default='')
     content_type = models.ForeignKey(ContentType)
@@ -69,19 +69,73 @@ class BaseModelManager(models.Manager):
     """
 
     def set_attributes(self, obj):
+        """
+        Given an object that inherits from BaseModel, loops through all
+        associated ModelAttribute objects and sets them up as properties on the
+        object directly.
+
+        Keyword arguments:
+        obj -- An object that inherits from BaseModel.
+        """
+
         for attribute in obj.attributes.all():
             if not hasattr(obj, attribute.name):
                 setattr(obj, attribute.name, attribute.value)
 
         return obj
 
+    def create_attributes(self, attributes, obj):
+        """
+        Given a list of attributes and an object that inherits from BaseModel,
+        creates a series of ModelAttribute objects associated with the object.
+
+        Keyword arguments:
+        attributes -- a list of attribute names
+        obj -- An object that inherits from BaseModel.
+        """
+
+        for attribute in attributes:
+            obj.attributes.create(name=attribute)
+
     def get(self, *args, **kwargs):
         obj = super(BaseModelManager, self).get(*args, **kwargs)
 
         return self.set_attributes(obj)
 
-    def get_or_create(self, **kwargs):
-        obj = super(BaseModelManager, self).get_or_create(**kwargs)
+    def get_or_create(self, attributes=None, **kwargs):
+        """
+        Overwritten get_or_create method to support creating ModelAttribute
+        associations automatically when creating an object that inherits from
+        BaseModel.  When retrieving the object, any existing ModelAttribute
+        associations will be tied directly to the object as properties.
+
+        Keyword arguments:
+        attributes -- a list of attribute names.
+        """
+
+        obj, created = super(BaseModelManager, self).get_or_create(**kwargs)
+
+        # Only create the attributes if the object was created.
+        if created and attributes is not None:
+            self.create_attributes(attributes, obj)
+
+        return self.set_attributes(obj)
+
+    def create(self, attributes, **kwargs):
+        """
+        Overwritten create method to support creating ModelAttribute
+        associations automatically when creating an object that inherits from
+        BaseModel and associating the attributes with the object directly as
+        properties on the object.
+
+        Keyword arguments:
+        attributes -- a list of attribute names.
+        """
+
+        obj = super(BaseModelManager, self).create(**kwargs)
+
+        if attributes is not None:
+            self.create_attributes(attributes, obj)
 
         return self.set_attributes(obj)
 

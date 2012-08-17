@@ -5,6 +5,12 @@ from django_base_model.models import ModelAttribute
 
 
 class ModelAttributeInline(generic.GenericTabularInline):
+    """
+    Defines a ModelAttribute inline that can be used to add/modify/delete
+    ModelAttribute objects associated with an object that inherits from
+    BaseModel.
+    """
+
     model = ModelAttribute
     extra = 0
 
@@ -30,7 +36,8 @@ class BaseModelAdmin(admin.ModelAdmin):
 
     def last_modified_by_name(self, obj):
         """
-        Method for use in the list_display tuple.
+        Provides a means of displaying a user's name nicely in the Django
+        admin.
         """
 
         return obj.last_modified_by.get_full_name()
@@ -38,19 +45,32 @@ class BaseModelAdmin(admin.ModelAdmin):
 
     def last_edited(self, obj):
         """
-        Method for use in the list_display tuple.
+        Provides a means of displaying a user's name nicely in the Django
+        admin.
         """
 
         return obj.time_modified.strftime('%m/%d/%Y %I:%M %p')
     last_edited.short_description = 'Last Edited'
 
     def save_model(self, request, obj, form, change):
+        """
+        Overridden save_model method to add support for tracking who has last
+        modified an object that inherits from BaseModel via the admin
+        interface.
+        """
+
         if hasattr(obj, 'last_modified_by') and hasattr(request, 'user'):
             obj.last_modified_by = request.user
 
         obj.save()
 
     def save_formset(self, request, form, formset, change):
+        """
+        Overridden save_formset method to add support for tracking who has last
+        modified a batch of objects that inherits from BaseModel via the admin
+        interface.
+        """
+
         instances = formset.save(commit=False)
 
         for instance in instances:

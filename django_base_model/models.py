@@ -39,7 +39,12 @@ class ModelAttribute(models.Model):
         Model clean method to validate the value of "name" before saving any
         changes to the model.  We only want valid names that could be turned
         easily into Python attributes on an object.
+
+        We also want to enforce "name" being required.
         """
+
+        if not self.name:
+            raise ValidationError('Name is a required field.')
 
         self.name = self.name.lower()
 
@@ -79,7 +84,7 @@ class BaseModelManager(models.Manager):
         """
 
         for attribute in obj.attributes.all():
-            if not hasattr(obj, attribute.name):
+            if attribute.name and not hasattr(obj, attribute.name):
                 setattr(obj, attribute.name, attribute.value)
 
         return obj

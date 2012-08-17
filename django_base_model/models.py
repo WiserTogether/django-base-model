@@ -61,7 +61,8 @@ class ModelAttribute(models.Model):
 
         # This will have already passed validation and we want to keep the
         # names lower case.
-        self.name = self.name.lower()
+        #self.name = self.name.lower()
+        self.full_clean()
 
         return super(ModelAttribute, self).save(*args, **kwargs)
 

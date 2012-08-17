@@ -34,7 +34,10 @@ BaseModel.
                           which must inherit from BaseModel.
         """
 
-        obj, created = super(BaseModelManager, self).get_or_create(**kwargs)
+        obj, created = super(
+            ModelAttributeManager,
+            self
+        ).get_or_create(**kwargs)
 
         # Only reset the ModelAttribute association if the object was created.
         if created and content_object and hasattr(content_object, 'set_attribute'):
@@ -58,7 +61,10 @@ BaseModel.
                           which must inherit from BaseModel.
         """
 
-        obj = super(BaseModelManager, self).create(**kwargs)
+        obj = super(
+            ModelAttributeManager,
+            self
+        ).create(**kwargs)
 
         if content_object and hasattr(content_object, 'set_attribute'):
             content_object.set_attribute(obj.name, obj.value)

@@ -9,6 +9,44 @@ from django.db import models
 ATTRIBUTE_MODEL_NAME_PATTERN = re.compile('^[a-z0-9_]+$')
 
 
+class ModelAttributeManager(models.Manager):
+    """
+    Defines a custom ModelManager that takes into account automatically adding
+    new ModelAttributes as direct properties on objects that inherit from
+    BaseModel.
+    """
+
+    def get_or_create(self, **kwargs):
+        """
+        Overwritten get_or_create method to support automatically adding the
+        ModelAttribute as a direct property to the associated content object,
+        if the object inherits from BaseModel.
+        """
+
+        obj, created = super(BaseModelManager, self).get_or_create(**kwargs)
+
+        # Only reset the ModelAttribute association if the object was created.
+        if created and hasattr(obj.content_object, 'set_attribute'):
+            obj.content_object.set_attribute(obj.name, obj.value)
+
+        return (obj, created)
+
+    def create(self, **kwargs):
+        """
+        Overwritten create method to support automatically adding the
+        ModelAttribute as a direct property to the associated content object,
+        if the object inherits from BaseModel.
+
+        """
+
+        obj = super(BaseModelManager, self).create(**kwargs)
+
+        if hasattr(obj.content_object, 'set_attribute'):
+            obj.content_object.set_attribute(obj.name, obj.value)
+
+        return obj
+
+
 class ModelAttribute(models.Model):
     """
     Defines a simple name/value pair model that can be used with generic
@@ -30,6 +68,8 @@ class ModelAttribute(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
+
+    objects = ModelAttributeManager()
 
     class Meta:
         unique_together = ('name', 'content_type', 'object_id')
@@ -70,39 +110,11 @@ class BaseModelManager(models.Manager):
     properties when doing a get of a single instance of the model.
     """
 
-    def set_attributes(self, obj):
-        """
-        Given an object that inherits from BaseModel, loops through all
-        associated ModelAttribute objects and sets them up as properties on the
-        object directly.
-
-        Keyword arguments:
-        obj -- An object that inherits from BaseModel.
-        """
-
-        for attribute in obj.attributes.all():
-            if attribute.name and not hasattr(obj, attribute.name):
-                setattr(obj, attribute.name, attribute.value)
-
-        return obj
-
-    def create_attributes(self, attributes, obj):
-        """
-        Given a list of attributes and an object that inherits from BaseModel,
-        creates a series of ModelAttribute objects associated with the object.
-
-        Keyword arguments:
-        attributes -- a list of attribute names
-        obj -- An object that inherits from BaseModel.
-        """
-
-        for attribute in attributes:
-            obj.attributes.create(name=attribute)
-
     def get(self, *args, **kwargs):
         obj = super(BaseModelManager, self).get(*args, **kwargs)
+        obj.set_attributes()
 
-        return self.set_attributes(obj)
+        return obj
 
     def get_or_create(self, attributes=None, **kwargs):
         """
@@ -119,9 +131,11 @@ class BaseModelManager(models.Manager):
 
         # Only create the attributes if the object was created.
         if created and attributes is not None:
-            self.create_attributes(attributes, obj)
+            obj.create_attributes(attributes)
 
-        return self.set_attributes(obj)
+        obj.set_attributes()
+
+        return (obj, created)
 
     def create(self, attributes, **kwargs):
         """
@@ -137,9 +151,11 @@ class BaseModelManager(models.Manager):
         obj = super(BaseModelManager, self).create(**kwargs)
 
         if attributes is not None:
-            self.create_attributes(attributes, obj)
+            obj.create_attributes(attributes)
 
-        return self.set_attributes(obj)
+        obj.set_attributes()
+
+        return obj
 
 
 class BaseModel(models.Model):
@@ -163,3 +179,45 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+    def set_attribute(self, name, value, overwrite=False):
+        """
+        Sets a single attribute, usually when a new ModelAttribute object is
+        created.
+
+        Keyword arguments:
+        name -- The name of the attribute (from the ModelAttribute object).
+        value -- the value of the attribute (from the ModelAttribute object).
+        overwrite -- A boolean flag that will set a property without regard for
+                     any existing value that may already be set.
+        """
+
+        if overwrite or not hasattr(self, name):
+            setattr(self, name, value)
+
+    def set_attributes(self, overwrite=False):
+        """
+        Loops through all associated ModelAttribute objects and sets them up as
+        properties on the object directly.
+
+        Keyword arguments:
+        overwrite -- A boolean flag that will set a property without regard for
+                     any existing value that may already be set.
+        """
+
+        for attribute in self.attributes.all():
+            if attribute.name:
+                if overwrite or not hasattr(self, attribute.name):
+                    setattr(self, attribute.name, attribute.value)
+
+    def create_attributes(self, attributes):
+        """
+        Given a list of attributes, creates a series of ModelAttribute objects
+        associated with the object.
+
+        Keyword arguments:
+        attributes -- a list of attribute names
+        """
+
+        for attribute in attributes:
+            self.attributes.create(name=attribute)

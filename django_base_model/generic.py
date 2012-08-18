@@ -244,3 +244,11 @@ def create_generic_related_manager(superclass):
         create.alters_data = True
 
     return BaseGenericRelatedObjectManager
+
+
+try:
+    # We need this to support South properly.
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([], ["^django_base_model\.generic\.BaseGenericRelation"])
+except:
+    pass

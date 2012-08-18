@@ -249,6 +249,6 @@ def create_generic_related_manager(superclass):
 try:
     # We need this to support South properly.
     from south.modelsinspector import add_ignored_fields
-    add_ignored_fields([], ["^django_base_model\.generic\.BaseGenericRelation"])
+    add_ignored_fields(["^django_base_model\.generic\.BaseGenericRelation"])
 except:
     pass

@@ -13,10 +13,10 @@ ATTRIBUTE_MODEL_NAME_PATTERN = re.compile('^[a-z0-9_]+$')
 
 class ModelAttributeManager(models.Manager):
     """
-Defines a custom ModelManager that takes into account automatically adding
-new ModelAttributes as direct properties on objects that inherit from
-BaseModel.
-"""
+    Defines a custom ModelManager that takes into account automatically adding
+    new ModelAttributes as direct properties on objects that inherit from
+    BaseModel.
+    """
 
     def get_or_create(self, content_object=None, **kwargs):
         """

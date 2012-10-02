@@ -161,7 +161,7 @@ class BaseModelManager(models.Manager):
         obj, created = super(BaseModelManager, self).get_or_create(**kwargs)
 
         # Only create the attributes if the object was created.
-        if created and attributes is not None:
+        if created:
             obj.create_attributes(
                 attributes=attributes,
                 attribute_names=attribute_names
@@ -183,11 +183,10 @@ class BaseModelManager(models.Manager):
 
         obj = super(BaseModelManager, self).create(**kwargs)
 
-        if attributes is not None:
-            obj.create_attributes(
-                attributes=attributes,
-                attribute_names=attribute_names
-            )
+        obj.create_attributes(
+            attributes=attributes,
+            attribute_names=attribute_names
+        )
 
         return obj
 

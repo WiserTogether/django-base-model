@@ -296,24 +296,55 @@ class BaseModel(models.Model):
 
     def create_attributes(self, **kwargs):
         """
-        Given a list of attributes, creates a series of ModelAttribute objects
-        associated with the object and then automatically sets them as
-        properties on the object.
+        Given a dictionary or list of attributes, creates a series of
+        ModelAttribute objects associated with the object and then
+        automatically sets them as properties on the object.
+
+        If attributes is present in the kwargs, attribute_names will be
+        ignored.
 
         Keyword arguments:
         attributes -- a dictionary of name/value pairs.
         attribute_names -- a list of attribute names.
-
-        If attributes is present in the kwargs, attribute_names will be
-        ignored.
         """
 
         attributes = kwargs.get('attributes', None)
         attribute_names = kwargs.get('attribute_names', None)
 
         if attributes:
-            for name, value in kwargs['attributes'].items():
+            for name, value in attributes.items():
                 self.attributes.create(self, name=name, value=value)
         elif attribute_names:
-            for name in kwargs['attribute_names']:
+            for name in attribute_names:
                 self.attributes.create(self, name=name)
+
+    def update_attributes(self, **kwargs):
+        """
+        Given a dictionary of attributes, updates all of the ModelAttribute
+        objects associated with the object with the new values provided.
+
+        If create is present in the kwargs and True, any attribute that is not
+        found will also be created.
+
+        Keyword arguments:
+        attributes -- a dictionary of name/value pairs.
+        create --  a boolean indicating whether or not attributes that don't
+                   exist should be created.
+        """
+
+        attributes = kwargs.get('attributes', None)
+        create = kwargs.get('create', False)
+
+        if attributes:
+            for name, value in attributes.items():
+                try:
+                    model_attribute = self.attributes.get(name=name)
+                except ModelAttribute.DoesNotExist:
+                    if create:
+                        self.attributes.create(self, name=name, value=value)
+                    else:
+                        continue
+                else:
+                    model_attribute.value = value
+                    model_attribute.save()
+                    self.set_attribute(name=name, value=value, overwrite=True)

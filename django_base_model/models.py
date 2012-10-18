@@ -264,6 +264,14 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
+    def get_attributes_as_dict(self):
+        """
+        Retrieves all attributes associated with the model that inherits from
+        this BaseModel class and returns them as a dictionary.
+        """
+
+        return {name: value for name, value in self.attributes.values_list('name', 'value')}
+
     def set_attribute(self, name, value, overwrite=False):
         """
         Sets a single attribute, usually when a new ModelAttribute object is

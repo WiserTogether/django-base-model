@@ -326,6 +326,25 @@ class BaseModel(models.Model):
             for name in attribute_names:
                 self.attributes.create(self, name=name)
 
+    def delete_attributes(self, **kwargs):
+        """
+        Deletes all associated ModelAttribute objects with the object.
+
+        If attribute_names is present in the kwargs, then only the attributes
+        whose names are given will be deleted.
+
+        Keyword arugments:
+        attribute_names -- a list of attribute names.
+        """
+
+        attributes = self.attributes.all()
+        attribute_names = kwargs.get('attribute_names', None)
+
+        if attribute_names:
+            attributes = attributes.filter(name__in=attribute_names)
+
+        attributes.delete()
+
     def update_attributes(self, **kwargs):
         """
         Given a dictionary of attributes, updates all of the ModelAttribute

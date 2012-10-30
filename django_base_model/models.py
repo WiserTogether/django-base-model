@@ -89,6 +89,13 @@ class ModelAttribute(models.Model):
         max_length=255,
         help_text='The name must be set to something that looks like a Python property (e.g., "my_property").'
     )
+    display_name = models.CharField(
+        blank=True,
+        default='',
+        max_length=255,
+        help_text='This is the display name of the property. It will default a human readable version of the name with all words capitalized.',
+        verbose_name='Display Name'
+    )
     value = models.TextField(blank=True, default='')
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
@@ -100,7 +107,7 @@ class ModelAttribute(models.Model):
         unique_together = ('name', 'content_type', 'object_id')
 
     def __unicode__(self):
-        return u'%s: %s' % (self.name, self.value)
+        return u'%s (%s): %s' % (self.display_name, self.name, self.value)
 
     def clean(self):
         """
@@ -115,6 +122,13 @@ class ModelAttribute(models.Model):
         if ATTRIBUTE_MODEL_NAME_PATTERN.match(self.name) is None:
             raise ValidationError(
                 '"name" must be in the format of a Python object property (e.g., "my_property").'
+            )
+
+        # Now make sure we have a display name, and default to utilizing the
+        # name if none is present.
+        if not self.display_name:
+            self.display_name = ' '.join(
+                [word.capitalize() for word in self.name.split('_')]
             )
 
     def save(self, *args, **kwargs):
